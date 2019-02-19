@@ -32,7 +32,7 @@ server.get('/api/zoos/:id', async (req, res) => {
     if(zoo){
       res.status(200).json(zoo);
     } else {
-      res.status(400).json({ error: 'No zoo with that id was found' });
+      res.status(404).json({ error: 'No zoo with that ID was found' });
     }
   } catch (error) {
     res.status(500).json(error);
@@ -49,6 +49,39 @@ server.post('/api/zoos', async (req, res) => {
 
       res.status(201).json(zoo);
     } catch (error){
+      res.status(500).json(error);
+    }
+  }
+});
+
+server.delete('/api/zoos/:id', async (req, res) => {
+  try {
+    const count = await db('zoos').where({ id: req.params.id }).del();
+
+    if(count > 0 ){
+      res.status(204).end();
+    } else {
+      res.status(404).json({ error: 'No zoo with that ID was found' });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+server.put('/api/zoos/:id', async (req, res) => {
+  if(!req.body.name){
+    res.status(400).json({ error: 'Please assign a name to the Zoo' });
+  } else {
+    try {
+      const count = await db('zoos').where({ id: req.params.id }).update(req.body);
+
+      if(count > 0 ){
+        const zoo = await db('zoos').where({ id: req.params.id }).first();
+        res.status(200).json(zoo);
+      } else {
+        res.status(404).json({ error: 'No zoo with that ID was found' });
+      }
+    } catch (error) {
       res.status(500).json(error);
     }
   }
